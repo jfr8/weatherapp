@@ -13,12 +13,12 @@
 
       <div class="weatherWrap">
         <div class="location-box">
-          <div class="location">Secaucus NJ</div>
-          <div class="date">March 2nd, 2023</div>
+          <div class="location"> {{ currentWeather.name }}</div>
+          <div class="date">{{ currentDate }}</div>
         </div>
 
         <div class="weather-box">
-          <div class="temp">9 F</div>
+          <div class="temp">{{ resultTempF }} F</div>
           <div class="weather">Rain</div>
         </div>
       </div>
@@ -28,26 +28,76 @@
 
 <script>
 
+
+
 export default {
   name: "App",
   data() {
     return {
-      api_key: "b3e811dcac5deace23e0494f7aeef804",
+      api_key: process.env.VUE_APP_API_KEY,
       urlBase: "https://api.openweathermap.org/data/2.5/",
       inputLocation: "",
       currentWeather: {},
+      resultTempF: '',
+      currentDate: ''
     };
+  },
+
+  created() {
+    console.log(this.api_key)
+    this.currentDate = this.todaysDate();
   },
 
   methods: {
     fetchWeatherData(event) {
       if (event.key == "Enter") {
         fetch(`${this.urlBase}weather?q=${this.inputLocation}&APPID=${this.api_key}`)
-        .then((data) => {
-          console.log(data)
+        .then((response) => {
+          //console.log('response: ',response.body)
+          return response.json();
+          //console.log('json',response.json())
+          // this.currentWeather = data;
+          // console.log('weather response: ',this.currentWeather)
+
+          // console.log(this.currentWeather.name)
+
+          // const test = Object.values(this.currentWeather);
+          // console.log(test)
+
+          // for (const [key, value] of Object.entries(this.currentWeather)){
+          //   console.log('test: ',`${key}: ${value}`)
+          // }
+
+          //console.log(formatObject);
+          //  const testData = Object.keys(data).map((item) => {
+          //   console.log('test if this shows')
+          //   console.log(data[item])
+           
+          // })
+          
         })
+        .then(this.setResults);
       }
-    }
+    },
+
+    setResults (results) {
+      console.log(results)
+      this.currentWeather = results;
+      this.resultTempF = this.converKtoF(results);
+    },
+
+    converKtoF(results) {
+      const kelvinTemp = results.main.temp;
+      const convertedToF = ( kelvinTemp - 273.15) * 9 / 5 + 32;
+      const roundedTempInF =  Math.round(convertedToF)
+      return roundedTempInF;
+
+    },
+
+    todaysDate() {
+      return new Date().toLocaleDateString();
+
+    } 
   },
 
 };
