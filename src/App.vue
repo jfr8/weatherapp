@@ -5,21 +5,33 @@
         <input
           type="text"
           class="searchBar"
-          placeholder="Search location..."
+          placeholder="Search weather in..."
           v-model="inputLocation"
-          @keypress="fetchWeatherData"
+          @keydown.enter="fetchWeatherData"
         />
       </div>
 
-      <div class="weatherWrap">
+      <div class="weatherWrap" v-if="showTable">
         <div class="location-box">
-          <div class="location"> {{ currentWeather.name }}</div>
-          <div class="date">{{ currentDate }}</div>
+          <div class="location">
+            {{ currentWeather.name }}
+          </div>
         </div>
+        <br /><br />
 
         <div class="weather-box">
+          <span class="spanPlaceholders">Actual:</span><br />
           <div class="temp">{{ resultTempF }} F</div>
-          <div class="weather">Rain</div>
+          <br />
+          <span class="spanPlaceholders">Feels Like:</span><br />
+          <div class="temp">{{ resultFeelsLike }} F</div>
+          <br />
+          <span class="spanPlaceholders">Conditions:</span><br />
+          <div class="weather">{{ conditions }}</div>
+        </div>
+
+        <div class="footer">
+          <label>Showing weather for {{ currentDate }}</label>
         </div>
       </div>
     </main>
@@ -27,8 +39,7 @@
 </template>
 
 <script>
-
-
+import { getData } from "./api";
 
 export default {
   name: "App",
@@ -38,68 +49,51 @@ export default {
       urlBase: "https://api.openweathermap.org/data/2.5/",
       inputLocation: "",
       currentWeather: {},
-      resultTempF: '',
-      currentDate: ''
+      resultTempF: "",
+      resultFeelsLike: "",
+      currentDate: "",
+      conditions: "",
+      showTable: false,
     };
   },
 
   created() {
-    console.log(this.api_key)
     this.currentDate = this.todaysDate();
   },
 
   methods: {
-    fetchWeatherData(event) {
-      if (event.key == "Enter") {
-        fetch(`${this.urlBase}weather?q=${this.inputLocation}&APPID=${this.api_key}`)
-        .then((response) => {
-          //console.log('response: ',response.body)
-          return response.json();
-          //console.log('json',response.json())
-          // this.currentWeather = data;
-          // console.log('weather response: ',this.currentWeather)
-
-          // console.log(this.currentWeather.name)
-
-          // const test = Object.values(this.currentWeather);
-          // console.log(test)
-
-          // for (const [key, value] of Object.entries(this.currentWeather)){
-          //   console.log('test: ',`${key}: ${value}`)
-          // }
-
-          //console.log(formatObject);
-          //  const testData = Object.keys(data).map((item) => {
-          //   console.log('test if this shows')
-          //   console.log(data[item])
-           
-          // })
-          
-        })
-        .then(this.setResults);
-      }
+    fetchWeatherData() {
+      getData(this.urlBase, this.inputLocation, this.api_key).then(
+        this.setResults
+      );
     },
 
-    setResults (results) {
-      console.log(results)
+    setResults(results) {
+      console.log(results);
       this.currentWeather = results;
-      this.resultTempF = this.converKtoF(results);
+      this.resultTempF = this.converKtoFTemp(results);
+      this.resultFeelsLike = this.convertKtoFLike(results);
+      this.conditions = results.weather[0].main;
+      this.showTable = true;
+      this.inputLocation = "";
     },
 
-    converKtoF(results) {
+    converKtoFTemp(results) {
       const kelvinTemp = results.main.temp;
-      const convertedToF = ( kelvinTemp - 273.15) * 9 / 5 + 32;
-      const roundedTempInF =  Math.round(convertedToF)
+      const convertedToF = ((kelvinTemp - 273.15) * 9) / 5 + 32;
+      const roundedTempInF = Math.round(convertedToF);
       return roundedTempInF;
+    },
 
+    convertKtoFLike(results) {
+      const convertedToF = ((results.main.feels_like - 273.15) * 9) / 5 + 32;
+      return Math.round(convertedToF);
     },
 
     todaysDate() {
       return new Date().toLocaleDateString();
-
-    } 
+    },
   },
-
 };
 </script>
 
@@ -115,7 +109,7 @@ body {
 }
 
 #app {
-  background-image: url("./assets/cold-gb.png");
+  background-image: url("./assets/light_blue.png");
   background-size: cover;
   background-position: bottom;
   transition: 0.4s;
@@ -201,5 +195,19 @@ main {
   font-weight: 700;
   font-style: italic;
   text-shadow: 3px 6px rgba(0, 0, 0, 0.25);
+}
+
+.spanPlaceholders {
+  font-weight: 400;
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+    "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+  size: 18px;
+  color: white;
+}
+
+.footer {
+  color: white;
+  margin-top: 80px;
+  padding-left: 50px;
 }
 </style>
