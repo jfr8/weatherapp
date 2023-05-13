@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" v-bind:class="bgCssClass">
     <main>
       <div class="searchBox">
         <input
@@ -14,7 +14,7 @@
       <div class="weatherWrap" v-if="showTable">
         <div class="location-box">
           <div class="location">
-            {{ currentWeather.name }}
+            {{ cityName }}
           </div>
         </div>
         <br /><br />
@@ -49,11 +49,13 @@ export default {
       urlBase: "https://api.openweathermap.org/data/2.5/",
       inputLocation: "",
       currentWeather: {},
+      cityName: "",
       resultTempF: "",
       resultFeelsLike: "",
       currentDate: "",
       conditions: "",
       showTable: false,
+      bgCssClass: "defaultBg",
     };
   },
 
@@ -63,19 +65,24 @@ export default {
 
   methods: {
     fetchWeatherData() {
-      getData(this.urlBase, this.inputLocation, this.api_key).then(
-        this.setResults
-      );
+      getData(this.urlBase, this.inputLocation, this.api_key)
+        .then(this.setResults)
+        .catch(() => {
+          this.handleError();
+        });
     },
 
     setResults(results) {
-      console.log(results);
-      this.currentWeather = results;
+      this.currentWeather = results; // copy of entire object
+
       this.resultTempF = this.converKtoFTemp(results);
       this.resultFeelsLike = this.convertKtoFLike(results);
+      this.setBgColor();
+
       this.conditions = results.weather[0].main;
-      this.showTable = true;
-      this.inputLocation = "";
+      this.cityName = results.name;
+
+      this.appUiManagment();
     },
 
     converKtoFTemp(results) {
@@ -88,6 +95,30 @@ export default {
     convertKtoFLike(results) {
       const convertedToF = ((results.main.feels_like - 273.15) * 9) / 5 + 32;
       return Math.round(convertedToF);
+    },
+
+    setBgColor() {
+      console.log("does this show: ", this.resultTempF);
+      if (this.resultTempF >= 80) {
+        console.log(this.resultTempF);
+        this.bgCssClass = "warmBg";
+      } else if (this.resultTempF >= 90) {
+        this.bgCssClass = "hotBg";
+      } else {
+        this.bgCssClass = "normalBg";
+      }
+    },
+
+    appUiManagment() {
+      this.showTable = true;
+      this.inputLocation = "";
+    },
+
+    handleError() {
+      this.showTable = false;
+      this.inputLocation = "";
+      this.bgCssClass = "defaultBg";
+      alert("City not found!!");
     },
 
     todaysDate() {
@@ -109,10 +140,93 @@ body {
 }
 
 #app {
-  background-image: url("./assets/light_blue.png");
   background-size: cover;
-  background-position: bottom;
+  /* background-position: bottom; */
   transition: 0.4s;
+}
+
+.defaultBg {
+  background-image: linear-gradient(
+  45deg,
+  hsl(0deg 0% 86%) 0%,
+  hsl(344deg 0% 79%) 7%,
+  hsl(344deg 0% 72%) 14%,
+  hsl(344deg 0% 66%) 21%,
+  hsl(344deg 0% 59%) 29%,
+  hsl(344deg 0% 53%) 36%,
+  hsl(344deg 0% 46%) 43%,
+  hsl(344deg 0% 40%) 50%,
+  hsl(344deg 0% 34%) 57%,
+  hsl(344deg 0% 29%) 64%,
+  hsl(344deg 0% 23%) 71%,
+  hsl(344deg 0% 18%) 79%,
+  hsl(344deg 0% 13%) 86%,
+  hsl(343deg 0% 8%) 93%,
+  hsl(0deg 0% 0%) 100%
+);
+}
+
+.warmBg {
+  background-image: linear-gradient(
+    45deg,
+    hsl(21deg 100% 61%) 0%,
+    hsl(19deg 100% 61%) 7%,
+    hsl(18deg 100% 62%) 14%,
+    hsl(17deg 100% 63%) 21%,
+    hsl(15deg 100% 64%) 29%,
+    hsl(14deg 100% 65%) 36%,
+    hsl(12deg 100% 66%) 43%,
+    hsl(11deg 100% 66%) 50%,
+    hsl(9deg 100% 67%) 57%,
+    hsl(8deg 100% 68%) 64%,
+    hsl(6deg 100% 69%) 71%,
+    hsl(5deg 100% 69%) 79%,
+    hsl(3deg 100% 70%) 86%,
+    hsl(2deg 100% 71%) 93%,
+    hsl(0deg 100% 71%) 100%
+  );
+}
+
+.hotBg {
+  background-image: linear-gradient(
+    45deg,
+    hsl(1deg 100% 38%) 0%,
+    hsl(2deg 92% 40%) 7%,
+    hsl(3deg 85% 43%) 14%,
+    hsl(3deg 79% 45%) 21%,
+    hsl(3deg 74% 48%) 29%,
+    hsl(2deg 70% 50%) 36%,
+    hsl(2deg 72% 52%) 43%,
+    hsl(2deg 74% 54%) 50%,
+    hsl(2deg 77% 56%) 57%,
+    hsl(2deg 80% 58%) 64%,
+    hsl(1deg 83% 60%) 71%,
+    hsl(1deg 86% 62%) 79%,
+    hsl(1deg 90% 64%) 86%,
+    hsl(0deg 94% 66%) 93%,
+    hsl(0deg 99% 68%) 100%
+  );
+}
+
+.normalBg {
+  background-image: linear-gradient(
+    45deg,
+    hsl(240deg 95% 33%) 0%,
+    hsl(235deg 92% 35%) 7%,
+    hsl(232deg 88% 37%) 14%,
+    hsl(230deg 85% 39%) 21%,
+    hsl(228deg 81% 41%) 29%,
+    hsl(227deg 77% 44%) 36%,
+    hsl(226deg 74% 46%) 43%,
+    hsl(225deg 71% 49%) 50%,
+    hsl(224deg 71% 51%) 57%,
+    hsl(223deg 75% 53%) 64%,
+    hsl(222deg 79% 56%) 71%,
+    hsl(221deg 83% 58%) 79%,
+    hsl(221deg 88% 61%) 86%,
+    hsl(220deg 94% 64%) 93%,
+    hsl(219deg 100% 66%) 100%
+  );
 }
 
 main {
@@ -193,7 +307,7 @@ main {
 .weather-box .weather {
   font-size: 48px;
   font-weight: 700;
-  font-style: italic;
+  color: white;
   text-shadow: 3px 6px rgba(0, 0, 0, 0.25);
 }
 
