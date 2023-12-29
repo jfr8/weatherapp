@@ -53,6 +53,7 @@ export default {
       resultTempF: "",
       resultFeelsLike: "",
       currentDate: "",
+      currentTime: "",
       conditions: "",
       showTable: false,
       bgCssClass: "defaultBg",
@@ -98,7 +99,6 @@ export default {
     },
 
     setBgColor() {
-      console.log("does this show: ", this.resultTempF);
       if (this.resultTempF >= 80) {
         console.log(this.resultTempF);
         this.bgCssClass = "warmBg";
@@ -122,7 +122,17 @@ export default {
     },
 
     todaysDate() {
-      return new Date().toLocaleDateString();
+      const options = {
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        timeZoneName: "short",
+      };
+
+      return new Date().toLocaleString(undefined, options);
     },
   },
 };
@@ -147,23 +157,23 @@ body {
 
 .defaultBg {
   background-image: linear-gradient(
-  45deg,
-  hsl(0deg 0% 86%) 0%,
-  hsl(344deg 0% 79%) 7%,
-  hsl(344deg 0% 72%) 14%,
-  hsl(344deg 0% 66%) 21%,
-  hsl(344deg 0% 59%) 29%,
-  hsl(344deg 0% 53%) 36%,
-  hsl(344deg 0% 46%) 43%,
-  hsl(344deg 0% 40%) 50%,
-  hsl(344deg 0% 34%) 57%,
-  hsl(344deg 0% 29%) 64%,
-  hsl(344deg 0% 23%) 71%,
-  hsl(344deg 0% 18%) 79%,
-  hsl(344deg 0% 13%) 86%,
-  hsl(343deg 0% 8%) 93%,
-  hsl(0deg 0% 0%) 100%
-);
+    45deg,
+    hsl(0deg 0% 86%) 0%,
+    hsl(344deg 0% 79%) 7%,
+    hsl(344deg 0% 72%) 14%,
+    hsl(344deg 0% 66%) 21%,
+    hsl(344deg 0% 59%) 29%,
+    hsl(344deg 0% 53%) 36%,
+    hsl(344deg 0% 46%) 43%,
+    hsl(344deg 0% 40%) 50%,
+    hsl(344deg 0% 34%) 57%,
+    hsl(344deg 0% 29%) 64%,
+    hsl(344deg 0% 23%) 71%,
+    hsl(344deg 0% 18%) 79%,
+    hsl(344deg 0% 13%) 86%,
+    hsl(343deg 0% 8%) 93%,
+    hsl(0deg 0% 0%) 100%
+  );
 }
 
 .warmBg {
@@ -323,5 +333,6 @@ main {
   color: white;
   margin-top: 80px;
   padding-left: 50px;
+  text-align: center;
 }
 </style>
